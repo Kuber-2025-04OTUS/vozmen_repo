@@ -22,7 +22,14 @@ spec:
         homework: "true"
       volumes:
         - name: shared-volume
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: homework-pvc
+        - name: config
+          configMap:
+            name: homework-configmap
+        - name: config-nginx
+          configMap:
+            name: nginx-config
       initContainers:
       - name: init-content
         image: ubuntu
@@ -32,11 +39,10 @@ spec:
             mountPath: /init
       containers:
       - name: web-server
-        image: python:3.9
+        image: nginx:alpine
         readinessProbe:
           exec:
             command: ["cat", "/homework/index.html"]
-        command: ['sh', '-c', 'cd /homework && python -m http.server 8000']
         lifecycle:
           preStop:
             exec:
@@ -46,3 +52,8 @@ spec:
         volumeMounts:
           - name: shared-volume
             mountPath: /homework
+          - name: config
+            mountPath: /conf
+          - name: config-nginx
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
