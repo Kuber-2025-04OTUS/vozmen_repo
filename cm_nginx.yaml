@@ -24,6 +24,9 @@ data:
             location /conf/dbconfig {
                 alias /conf/dbconfig;
             }
+            location /metrics/metrics.html {
+                alias /metrics/metrics.html;
+            }
         }
     }
 

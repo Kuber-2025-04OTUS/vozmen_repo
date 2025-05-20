@@ -18,6 +18,7 @@ spec:
       labels:
         app: homework-web
     spec:
+      serviceAccountName: monitoring
       nodeSelector:
         homework: "true"
       volumes:
@@ -30,13 +31,27 @@ spec:
         - name: config-nginx
           configMap:
             name: nginx-config
+        - name: metrics-volume
+          emptyDir: {}
       initContainers:
       - name: init-content
         image: ubuntu
-        command: ['sh', '-c', 'echo "<html><body><h1>Web Server</h1><p>HOMEWORK</p></body></html>" > /init/index.html']
+        envFrom:
+          - secretRef:
+              name: metrics-secret
+        command: ['sh', '-c']
+        args:
+          - |
+            set -x
+            apt-get update
+            apt-get install -y curl
+            echo "<html><body><h1>Web Server</h1><p>HOMEWORK</p></body></html>" > /init/index.html
+            curl -s -k --connect-timeout 5 --max-time 10 -H "Authorization: Bearer ${TOKEN}" ${URL}/metrics > /metrics/metrics.html 2>/dev/null
         volumeMounts:
           - name: shared-volume
             mountPath: /init
+          - name: metrics-volume
+            mountPath: /metrics
       containers:
       - name: web-server
         image: nginx:alpine
@@ -57,3 +72,5 @@ spec:
           - name: config-nginx
             mountPath: /etc/nginx/nginx.conf
             subPath: nginx.conf
+          - name: metrics-volume
+            mountPath: /metrics
