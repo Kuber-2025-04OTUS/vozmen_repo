@@ -1,0 +1,4 @@
+Here you can see main page:             http://{{ .Values.app.service.host }}{{ .Values.app.ingress.homework.path }}
+Here you can see configMap content:     http://{{ .Values.app.service.host }}{{ .Values.app.ingress.db.path }}dbuser
+                                        http://{{ .Values.app.service.host }}{{ .Values.app.ingress.db.path }}dbpass
+Here you can see cluster metrics:       http://{{ .Values.app.service.host }}{{ .Values.app.ingress.metrics.path }}
