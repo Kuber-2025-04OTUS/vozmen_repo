@@ -1,6 +1,18 @@
 namespace: homework
-hello-world:
+
+ingress-nginx:
   enabled: true
+  controller:
+    service:
+      type: NodePort
+      nodePorts:
+        http: 30080
+        https: 30443
+    ingressClassResource:
+      name: nginx
+      enabled: true
+      default: true
+
 app:
   name: homework-web
   replicaCount: 3
