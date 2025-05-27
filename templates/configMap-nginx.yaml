@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-config
-  namespace: homework
+  name: {{ .Values.app.configMap_nginx.name }}
+  namespace: {{ .Values.namespace }}
 data:
   nginx.conf: |
     http {
@@ -21,10 +21,7 @@ data:
             location /conf/dbpass {
                 alias /conf/dbpass;
             }
-            location /conf/dbconfig {
-                alias /conf/dbconfig;
-            }
-            location /metrics/metrics.html {
+            location /metrics {
                 alias /metrics/metrics.html;
             }
         }
@@ -33,5 +30,3 @@ data:
     events {
         worker_connections  1024;
     }
-
-

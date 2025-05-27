@@ -1,0 +1,183 @@
+namespace: homework
+
+ingress-nginx:
+  enabled: true
+  controller:
+    service:
+      type: NodePort
+      nodePorts:
+        http: 30080
+        https: 30443
+    ingressClassResource:
+      name: nginx
+      enabled: true
+      default: true
+
+app:
+  name: homework-web
+  replicaCount: 3
+  storage:
+    name: homework-storage
+    annotations:
+      storageclass.kubernetes.io/is-default-class: false
+    provisioner: k8s.io/minikube-hostpath
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+  configMap:
+    name: homework-configmap
+    dbuser: admin
+    dbpass: qwe123
+  configMap_nginx:
+    name: nginx-config
+  persistenceVolumeClaim:
+    name: homework-pvc
+    storageClassName: homework-storage
+    resources:
+      requests:
+        storage: 1Gi
+  serviceAccount_monitoring:
+    name: monitoring
+  serviceAccount_cd:
+    name: cd
+  secret_monitoring:
+    name: monitoring-secret
+  secret_cd:
+    name: homework-secret
+  clusterRole:
+    name: homework-clusterRole
+    rules:
+      nonResourceURLs:
+        - /metrics
+      verbs:
+        - get
+  ClusterRoleBinding:
+    name: homework-clusterRoleBinding
+    subjects:
+    - kind: ServiceAccount
+      name: monitoring
+      namespace: homework
+    roleRef:
+      kind: ClusterRole
+      name: homework-clusterRole
+      apiGroup: rbac.authorization.k8s.io
+  RoleBinding_admin:
+    name: RoleBinding-admin
+    subjects:
+    - kind: ServiceAccount
+      name: cd
+      namespace: homework
+    roleRef:
+      kind: ClusterRole
+      name: admin
+      apiGroup: rbac.authorization.k8s.io
+  ingress:
+    homework:
+      name: ingress-homework
+      host: homework.otus
+      path: /homepage
+      pathType: Prefix
+      rewriteTarget: /
+      serviceName: homework-service
+      servicePort: 80
+    db:
+      name: ingress-db
+      host: homework.otus
+      path: /conf/
+      pathType: Prefix
+      serviceName: homework-service
+      servicePort: 80
+    metrics:
+      name: ingress-metrics
+      host: homework.otus
+      path: /metrics
+      pathType: Prefix
+      serviceName: homework-service
+      servicePort: 80
+  service:
+    name: homework-service
+    host: homework.otus
+    selector:
+      app: homework-web
+    protocol: TCP
+    port: 80
+    targetPort: 8000
+    type: ClusterIP
+  deployment:
+    name: homework-deployment
+    namespace: homework
+    selector:
+      matchLabels:
+        app: homework-web
+    rollingUpdate:
+      maxSurge: 1 
+      maxUnavailable: 1
+    type: RollingUpdate
+    labels:
+      app: homework-web
+    serviceAccountName: monitoring
+    nodeSelector:
+      homework: "true"
+    volumes:
+      - name: shared-volume
+        type: pvc
+        pvcName: homework-pvc
+      - name: config
+        type: configMap
+        configMapName: homework-configmap
+      - name: config-nginx
+        type: configMap
+        configMapName: nginx-config
+      - name: metrics-volume
+        type: emptyDir
+    initContainers:
+      name: init-content
+      image:
+        repository: docker.io/library/ubuntu
+        tag: latest
+      command:
+        - /bin/sh
+        - -c
+      args:
+        - |
+          apt update
+          apt install curl -y
+          echo "<html><body><h1>Web Server</h1><p>HOMEWORK</p></body></html>" > /init/index.html
+          TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          URL=$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT
+          curl -s -k -H "Authorization: Bearer ${TOKEN}" https://${URL}/metrics > /metrics/metrics.html 2>/dev/null
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /init
+        - name: metrics-volume
+          mountPath: /metrics
+    containers:
+      name: web-server
+      image:
+        repository: docker.io/library/nginx
+        tag: alpine
+      readinessProbe:
+          exec:
+            command:
+              - cat
+              - /homework/index.html
+      lifecycle:
+        preStop:
+          exec:
+            command:
+              - sh
+              - c
+              - rm -f /homework/index.html
+      ports:
+        - containerPort: 8000
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /homework
+        - name: config
+          mountPath: /conf
+        - name: config-nginx
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: metrics-volume
+          mountPath: /metrics
+probes:
+  enabled: true
