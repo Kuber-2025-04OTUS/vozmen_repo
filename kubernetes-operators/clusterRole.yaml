@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mysql-clusterrole
+rules:
+- apiGroups: ["otus.homework"]
+  resources: ["mysqls"]
+  verbs: ["create", "delete", "update", "get", "list", "watch", "patch"]
+- apiGroups: ["", "apps"]
+  resources: ["services", "persistentvolumes", "persistentvolumeclaims", "deployments"]
+  verbs: ["create", "delete", "update", "get", "list", "watch"]
