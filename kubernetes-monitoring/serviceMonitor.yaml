@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prom-nginx
+    release: prom
+  name: prometheus-nginx
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: '9113'
+    path: /metrics
+  selector:
+    matchLabels:
+      app: prom-nginx
