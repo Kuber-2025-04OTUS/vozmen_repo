@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prom-nginx
+  template:
+    metadata:
+      labels:
+        app: prom-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:custom
+        ports:
+          - containerPort: 80
+      - name: exporter
+        image: nginx/nginx-prometheus-exporter:latest
+        ports:
+          - containerPort: 9113
+        args:
+          - --nginx.scrape-uri=http://nginx-service/metrics
