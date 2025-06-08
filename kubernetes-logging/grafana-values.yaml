@@ -1,0 +1,12 @@
+
+nodeSelector:
+  node-role: infra
+tolerations:
+  - key: "node-role"
+    operator: "Equal"
+    value: "infra"
+    effect: "NoSchedule"
+persistence:
+  enabled: true
+  storageClassName: yc-network-hdd
+  size: 5Gi
