@@ -18,9 +18,11 @@ app:
     name: homework-storage
     annotations:
       storageclass.kubernetes.io/is-default-class: false
-    provisioner: k8s.io/minikube-hostpath
+    provisioner: disk-csi-driver.mks.ycloud.io
     reclaimPolicy: Retain
     volumeBindingMode: Immediate
+    parameters:
+      type: network-hdd
   configMap:
     name: homework-configmap
     dbuser: admin

@@ -9,3 +9,5 @@ metadata:
 provisioner: {{ .Values.app.storage.provisioner }}
 reclaimPolicy: {{ .Values.app.storage.reclaimPolicy }}
 volumeBindingMode: {{ .Values.app.storage.volumeBindingMode }}
+parameters:
+  type: {{ .Values.app.storage.parameters.type }}
