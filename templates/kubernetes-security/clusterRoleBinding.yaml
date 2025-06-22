@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ .Values.app.ClusterRoleBinding.name }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }} 
 subjects:
   {{- toYaml .Values.app.ClusterRoleBinding.subjects | nindent 0}}
 roleRef:
