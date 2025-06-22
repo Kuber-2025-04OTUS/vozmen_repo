@@ -1,4 +1,4 @@
-namespace: homework
+namespace: {{ .Release.Namespace }} 
 
 ingress-nginx:
   enabled: true
@@ -55,7 +55,7 @@ app:
     subjects:
     - kind: ServiceAccount
       name: monitoring
-      namespace: homework
+      namespace: {{ .Release.Namespace }} 
     roleRef:
       kind: ClusterRole
       name: homework-clusterRole
@@ -65,7 +65,7 @@ app:
     subjects:
     - kind: ServiceAccount
       name: cd
-      namespace: homework
+      namespace: {{ .Release.Namespace }} 
     roleRef:
       kind: ClusterRole
       name: admin
@@ -104,7 +104,7 @@ app:
     type: ClusterIP
   deployment:
     name: homework-deployment
-    namespace: homework
+    namespace: {{ .Release.Namespace }} 
     selector:
       matchLabels:
         app: homework-web

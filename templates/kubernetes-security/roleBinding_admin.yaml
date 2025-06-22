@@ -1,8 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: RoleBinding-admin
-  namespace: homework
+  name: {{ .Values.app.RoleBinding_admin.name }}
+  namespace: {{ .Values.namespace }}
 subjects:
   {{- toYaml .Values.app.RoleBinding_admin.subjects | nindent 0}}
 roleRef:
