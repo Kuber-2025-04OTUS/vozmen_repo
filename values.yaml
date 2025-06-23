@@ -11,9 +11,9 @@ ingress-nginx:
       enabled: true
       default: true
 
+replicaCount: 3
 app:
   name: homework-web
-  replicaCount: 3
   storage:
     name: homework-storage
     annotations:
